@@ -4,7 +4,7 @@
 
 ✊ Bend your fingers to the top of your palm, like you're closing your hand, in order to clear your drawing canvas.
 
-Download OBS-Studio in order to use the virtual camera feature, and draw during your video meetings to give visually pleasing presentations.
+[Download OBS-Studio](https://obsproject.com/ "OBS-Studio Download") in order to use the virtual camera feature, and draw during your video meetings to give visually pleasing presentations.
 Once you're in a meeting, change your camera the same way you'd change your web camera in settings on your meeting app like Zoom.
 
 ## Potential updates:
