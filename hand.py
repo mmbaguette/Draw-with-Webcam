@@ -6,11 +6,11 @@ import numpy as np
 import pyvirtualcam
 import pyautogui
 import time
-#import sys
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
+video_width, video_height = 640, 480 # 1280, 720 for 16:9 ratio, otherwise OpenCV will automatically change it
 
 def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
     # initialize the dimensions of the image to be resized and
@@ -58,16 +58,16 @@ def main():
   pinchingBefore = False
   cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 
-  #cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-  #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+  cap.set(cv2.CAP_PROP_FRAME_WIDTH, video_width)
+  cap.set(cv2.CAP_PROP_FRAME_HEIGHT, video_height)
   #cap.set(cv2.CAP_PROP_FPS, 60)
 
   with mp_hands.Hands(
-      min_detection_confidence=0.5,
-      min_tracking_confidence=0.6,
+      min_detection_confidence=0.85,
+      min_tracking_confidence=0.85,
       max_num_hands=1) as hands:
 
-    with pyvirtualcam.Camera(width=1920, height=1080, fps=30) as cam:
+    with pyvirtualcam.Camera(width=video_width, height=video_height, fps=30) as cam:
       while cap.isOpened():
         last_time = time.time()
         success, image = cap.read()
@@ -109,75 +109,49 @@ def main():
 
             index_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             index_finger_tip_coords = (index_finger_tip.x, index_finger_tip.y)
-            thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
-            thumb_tip_coords = (thumb_tip.x, thumb_tip.y)
-
-            index_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP]
+            index_finger_dip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_DIP]
+            index_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP]
             index_finger_mcp_coords = (index_finger_mcp.x, index_finger_mcp.y)
-            middle_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP]
-            middle_finger_mcp_coords = (middle_finger_mcp.x, middle_finger_mcp.y)
-            ring_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP]
-            ring_finger_mcp_coords = (ring_finger_mcp.x, ring_finger_mcp.y)
-            pinky_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_MCP]
-            pinky_mcp_coords = (pinky_mcp.x, pinky_mcp.y)
-            wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
-            wrist_coords = (wrist.x, wrist.y)
 
             middle_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
             middle_finger_tip_coords = (middle_finger_tip.x, middle_finger_tip.y)
-            ring_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP]
-            ring_finger_tip_coords = (ring_finger_tip.x, ring_finger_tip.y)
-            pinky_tip = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP]
-            pinky_tip_coords = (pinky_tip.x, pinky_tip.y)
+            middle_finger_dip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_DIP]
+            middle_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP]
+            middle_finger_mcp_coords = (middle_finger_mcp.x, middle_finger_mcp.y)
 
-            pinch_fingers_distance = round(distance2D(index_finger_tip_coords, thumb_tip_coords),2)
-            average_palm_fingers_to_wrist_distance = round(statistics.mean([
-              distance2D(index_finger_mcp_coords, wrist_coords),
-              distance2D(middle_finger_mcp_coords, wrist_coords),
-              distance2D(ring_finger_mcp_coords, wrist_coords),
-              distance2D(pinky_mcp_coords, wrist_coords),
-            ]),2)
+            pinch_fingers_distance = round(distance2D(index_finger_tip_coords, middle_finger_tip_coords),2)
 
             average_finger_tips_to_mpc = round(statistics.mean([
               distance2D(middle_finger_mcp_coords, middle_finger_tip_coords),
-              distance2D(ring_finger_mcp_coords, ring_finger_tip_coords),
-              distance2D(pinky_mcp_coords, pinky_tip_coords),
+              distance2D(index_finger_mcp_coords, index_finger_tip_coords),
             ]),2)
-            
-            '''
-            if pinch_fingers_distance * (average_palm_fingers_to_wrist_distance * 2) < 0.05:
-              sys.stdout.write(f"\rWrist distance: {average_palm_fingers_to_wrist_distance} | Pinch distance: {pinch_fingers_distance}")
-              sys.stdout.flush()
-            else:
-              sys.stdout.write(f"Not pinching!")
-              sys.stdout.flush()
-            '''
-            if pinch_fingers_distance < 0.07:            
-              if not pinchingBefore:
-                strokes.append([]) # if you weren't pinching before, create a new stoke to draw in
-              pinchingBefore = True
 
-              if strokes != []: # make the list is not empty (weird bug)
-                processor_midpoint = midpoint(index_finger_tip_coords, thumb_tip_coords)
-                real_midpoint = (int(processor_midpoint[0] * img_w), int(processor_midpoint[1] * img_h))
-                strokes[len(strokes) - 1].append([
-                  real_midpoint,
-                  currentColour,
-                  currentThickness
-                ])
-            else:
-              if average_finger_tips_to_mpc < 0.08:
+            if average_finger_tips_to_mpc < 0.05:
                 strokes = []
-                pass
-              pinchingBefore = False
+            else:
+              if pinch_fingers_distance < 0.06 and index_finger_tip.y < index_finger_mcp.y and middle_finger_tip.y < middle_finger_mcp.y and index_finger_tip.y < index_finger_dip.y and middle_finger_tip.y < middle_finger_dip.y:            
+                if not pinchingBefore:
+                  strokes.append([]) # if you weren't pinching before, create a new stoke to draw in
+                pinchingBefore = True
 
-        '''
+                if strokes != []: # make the list is not empty (weird bug)
+                  processor_midpoint = midpoint(index_finger_tip_coords, middle_finger_tip_coords)
+                  real_midpoint = (int(processor_midpoint[0] * img_w), int(processor_midpoint[1] * img_h))
+                  strokes[len(strokes) - 1].append([
+                    real_midpoint,
+                    currentColour,
+                    currentThickness
+                  ])
+              else:
+                pinchingBefore = False
+        
         cam.send(cv2.cvtColor(imageToDisplay, cv2.COLOR_RGB2BGR))
         cam.sleep_until_next_frame()
-        '''
+  
         fullscreenImgBack = np.zeros((pyautogui.size()[1], pyautogui.size()[0], 3), dtype=np.uint8)
         fullscreenImgBack[:] = (0,0,0)
 
+        cv2.imshow("First image", imageToDisplay)
         imageToDisplay = image_resize(imageToDisplay, height=pyautogui.size()[1])
         #make sure the size is perfect
         imageToDisplay = cv2.resize(imageToDisplay, (imageToDisplay.shape[1], pyautogui.size()[1]), interpolation=cv2.INTER_LINEAR)
@@ -186,14 +160,11 @@ def main():
         fullscreenImgBack[y_offset:y_offset+imageToDisplay.shape[0], x_offset:x_offset+imageToDisplay.shape[1]] = imageToDisplay
         
         cv2.namedWindow("MediaPipe Hands", cv2.WND_PROP_FULLSCREEN)
-        cv2.setWindowProperty("MediaPipe Hands",cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+        cv2.setWindowProperty("MediaPipe Hands", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
         cv2.imshow('MediaPipe Hands', fullscreenImgBack)
 
-        k = cv2.waitKey(5)
-        if k == 27:
+        if cv2.waitKey(1) == 27:
           break
-        elif k == 99:
-          strokes = []
 
         print(f"Image height: {img_h} Image width: {img_w}")
         print(f"FPS: {1 / (time.time() - last_time)}")
