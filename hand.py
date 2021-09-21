@@ -2,9 +2,10 @@ import cv2
 import mediapipe as mp
 import math
 import statistics
-import pyautogui
 import numpy as np
 import pyvirtualcam
+import pyautogui
+import time
 #import sys
 
 mp_drawing = mp.solutions.drawing_utils
@@ -57,20 +58,21 @@ def main():
   pinchingBefore = False
   cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 
-  cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-  cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+  #cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+  #cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+  #cap.set(cv2.CAP_PROP_FPS, 60)
 
   with mp_hands.Hands(
       min_detection_confidence=0.5,
       min_tracking_confidence=0.6,
       max_num_hands=1) as hands:
 
-    with pyvirtualcam.Camera(width=1280, height=720, fps=30) as cam:
+    with pyvirtualcam.Camera(width=1920, height=1080, fps=30) as cam:
       while cap.isOpened():
+        last_time = time.time()
         success, image = cap.read()
         imageToDisplay = cv2.flip(image, 1)
         img_h, img_w = imageToDisplay.shape[:2]
-        print(f"Image height: {img_h} Image width: {img_w}")
 
         if not success:
           print("Ignoring empty camera frame.")
@@ -164,11 +166,12 @@ def main():
                   currentThickness
                 ])
             else:
+              if average_finger_tips_to_mpc < 0.08:
+                strokes = []
+                pass
               pinchingBefore = False
-            
-            if average_finger_tips_to_mpc < 0.08:
-              strokes = []
 
+        '''
         cam.send(cv2.cvtColor(imageToDisplay, cv2.COLOR_RGB2BGR))
         cam.sleep_until_next_frame()
         '''
@@ -187,12 +190,13 @@ def main():
         cv2.imshow('MediaPipe Hands', fullscreenImgBack)
 
         k = cv2.waitKey(5)
-
-        if cv2.waitKey(5) & 0xFF == 27:
+        if k == 27:
           break
         elif k == 99:
           strokes = []
-        '''
+
+        print(f"Image height: {img_h} Image width: {img_w}")
+        print(f"FPS: {1 / (time.time() - last_time)}")
         
     cap.release()
     cv2.destroyAllWindows()
