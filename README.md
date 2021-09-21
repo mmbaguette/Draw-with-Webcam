@@ -1,8 +1,8 @@
 # Pose Drawing
 
-🤏 Draw with your hands by pinching your index and thumb together. 
+☝ Stick your index and middle finger together to draw.
 
-✊ Bend your fingers to the top of your palm, like you're closing your hand, in order to clear your drawing canvas.
+✊ Bend your drawing fingers down to clear the canvas.
 
 [Download OBS-Studio](https://obsproject.com/ "OBS-Studio Download") in order to use the virtual camera feature, and draw during your video meetings to give visually pleasing presentations.
 Once you're in a meeting, change your camera the same way you'd change your web camera in settings on your meeting app like Zoom.
