@@ -9,6 +9,7 @@ import time
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
+mp_holistic = mp.solutions.holistic
 mp_hands = mp.solutions.hands
 video_width, video_height = 640, 480 # 1280, 720 for 16:9 ratio, otherwise OpenCV will automatically change it
 
@@ -62,10 +63,10 @@ def main():
   cap.set(cv2.CAP_PROP_FRAME_HEIGHT, video_height)
   #cap.set(cv2.CAP_PROP_FPS, 60)
 
-  with mp_hands.Hands(
+  with mp_holistic.Hands(
       min_detection_confidence=0.85,
       min_tracking_confidence=0.85,
-      max_num_hands=1) as hands:
+      max_num_hands=1) as holistic:
 
     with pyvirtualcam.Camera(width=video_width, height=video_height, fps=30) as cam:
       while cap.isOpened():
@@ -85,7 +86,7 @@ def main():
         # To improve performance, optionally mark the image as not writeable to
         # pass by reference.
         imageToProcess.flags.writeable = False
-        results = hands.process(imageToProcess)
+        results = holistic.process(imageToProcess)
         
         for stroke in strokes:
           previousPointDrawn = None
@@ -97,9 +98,9 @@ def main():
             thickness = line[2]
             cv2.line(imageToDisplay, point1, point2, color, thickness=thickness, lineType=cv2.LINE_AA)
             previousPointDrawn = point2
-
-        if results.multi_hand_landmarks:
-          for hand_landmarks in results.multi_hand_landmarks:
+		
+        if results.right_hands:
+          for hand_landmarks in two_hands:
             mp_drawing.draw_landmarks(
               imageToDisplay,
               hand_landmarks,
