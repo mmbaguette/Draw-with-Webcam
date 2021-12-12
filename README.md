@@ -1,7 +1,6 @@
 # Pose Drawing (with two hands!)
 
 ☝ Stick your index and middle finger up together to draw.\
-✊ Bend your drawing fingers down to clear the canvas.\
 (Hands must face directly towards the camera)
 
 You can also draw with two hands simultaneously!
