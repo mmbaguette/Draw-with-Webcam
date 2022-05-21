@@ -1,4 +1,4 @@
-# Pose Drawing (with two hands!)
+# Draw using your Webcam with two hands!
 
 ☝ Stick your index and middle finger up together to draw.\
 (Hands must face directly towards the camera)
